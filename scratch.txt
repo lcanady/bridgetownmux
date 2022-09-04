@@ -1,0 +1,632 @@
+@define @isstaff {
+	@assert orflags(%#,wW)={
+  	@pemit %#=Permission denied.
+  }
+}
+
+@define msg\((.*)\,(.*)\) {
+	@pemit $1= %chGAME>%cn $2
+}
+
+
+&trig_stats #34 = 
+	@tr #31/trig.setstat = %0,
+
+&flaws #32 =
+	illiterate|
+  repulsive|
+  ugly|
+  helpless addiction|
+  addiction|
+  archaic|
+  living in the past
+  bondslave|
+  bond Junkie|
+  long bond|
+  farmer|
+  organovore|
+  metheuselah's thirst|
+  prey exclusion|
+  stake bait|
+  folklore bane|
+  folklore block|
+  stigmata|
+  baby teeth|
+  beastial temper|
+  branded by the camarilla|
+  clan curse|
+  dead flesh|
+  mortal frailty|
+  shunned by anarchs|
+  vitae dependancy|
+  infamy|
+  dark secret|
+  despised|
+  disliked|
+  no haven|
+  obvious predator|
+  known blankbody|
+  known corpse|
+  adversary|
+  destitute|
+  stalkers|
+  shunned|
+  suspect|
+  
+&merits #32 = 
+	beautiful|
+  stunning|
+  bond resistance|
+  short bond|
+  unbondable|
+  bloodhound|
+  iron gullet|
+  eat food|
+  anarch comrades|
+  camarilla contact|
+  catenating blood|
+  day drinker|
+  discipline affinity|
+  lifelike|
+  thin-blood alchemist|
+  vampiric resistance|
+  allies|
+  contacts|
+	fame|
+  influence|
+  haven|
+  herd|
+  zeroed|
+  cobbler|
+  mawla|
+  resources|
+  status
+  
+&pools #32=
+	health|
+  willpower|
+  hunger|
+  humanity
+
+&disciplines #32 = 
+	animalism|
+  auspex|
+  celerity|
+  dominate|
+  fortitude|
+  obfuscate|
+  potence|
+  presence|
+  protean|
+  blood sorcery|
+  rituals|
+  thin-blood alchemy
+
+&trig.stats #34 = 
+	&_pool.health.perm *%0=[add(u(#31/fn.getstat,%0, stamina),3)];
+  &_pool.health.temp *%0=[add(u(#31/fn.getstat,%0, stamina),3)];
+	&_pool.willpower.perm *%0=
+  	[add(
+    	u(#31/fn.getstat,%0, composure),
+      u(#31/fn.getstat,%0, resolve)
+    )];  
+  &_pool.willpower.temp *%0=
+  	[add(
+    	u(#31/fn.getstat,%0, composure),
+      u(#31/fn.getstat,%0, resolve)
+    )];
+
+&values.template #34=mortal|vampire|ghoul
+
+
+&values.stats #34 = 1|2|3|4|5|6
+&values.skills #34 = 1|2|3|4|5
+&pre.disciplines #34 = template:vampire
+&values.disciplines #34 = 1|2|3|4|5
+&pre.error.disciplines #34 = Template required: Vampire.
+&pre.unliving_hive #34 = template:vampire animalism:3 obfuscate:2
+&pre.error.unliving_hive #34 = Required: Vampire, Animalism 3, Obfuscate 2.
+
+
+&cmd.cg/wipe #31 = $+cg/wipe:
+	@dolist lattr(%#/_*) = &## %#=;
+  @pemit %#=%chGame>%cn Character reset.
+
+
+&cmd.cg/set #31=$[+@]?cg\/set\s+(.*)\s*=\s*(.*)?:
+	@fo %#=+stats/set %#/%1=%2;
+
+/*
+===== stat/set ===============================================================
+------------------------------------------------------------------------------
+	
+  SYTNTAX: stats/set <player>/<stat>=[<value>]
+  
+  This is the main command for settings stats in the V5 chargen system.
+  It can currently only set stats on characters, but I might add the
+  functionality for objects in the future!
+  
+  Setting a stat on a player other than yourself requires a Royalty bit or
+  higher.  The command is no longer available once a character has been 
+  approved.
+  
+  Registers
+    1:  target
+    2:  partial stat
+    3:  value
+  	q0: Stat type
+  	q1: full stat name
+  	q2: instance
+
+------------------------------------------------------------------------------
+*/
+
+
+&cmd.stats #31=$[+@]?stat[s]?\/set\s+(.*)\/(.*)\s*=\s*(.*)?:
+	
+  // Make sure they're either not approved, or are staff.
+  @assert or(not(hasflag(%#,approved)), orflags(%#,wWZ)) = {
+  	msg(%#, You may not use this command once approved!)
+  };
+  
+  // Make sure they have permissions to set stats on the given
+  // character. You can only set stats on player objects.
+  @assert 
+    or(
+      strmatach(pmatch(%1),%#),
+      orflags(%#,wWZ),
+      strmatch(lcstr(%1),me)
+    ) = {
+  		@pemit %#=Permission denied.
+  };
+  
+  // Find and extract the partial matched stat.
+  [setq(0, u(fn.whichlist, before(%2,%()) )]
+  [setq(1, ulocal(fn.statname, %2 ))]
+  [setq(2, before(after(%2,%(),%)))];
+  
+ 
+  // Check to make sure it's a valid stat.
+  @assert words(%q0) = {
+  	@pemit %# = %chGame>%cn That's not a valid stat.
+  };
+  
+  // Check to see if they're allowed to set the stat.
+  @assert 
+  	if(
+    	hasattr(#34,pre.[edit(%q1,%b,_)]), 
+     	u(#34/fn.prereqs, %1, get(#34/pre.[edit(%q1,%b,_)]) ),
+    	u(#34/fn.prereqs, %1, get(#34/pre.[edit(%q0,%b,_)]) )
+    ) =  {
+  	@pemit %#= %chGame>%cn 
+    	[if(
+      	hasattr(#34,pre.error.[edit(%q1,%b,_)]),
+        get(#34/pre.error.[edit(%q1,%b,_)]),
+        default(#34/pre.error.%q0, You can't set that here.)
+      )]
+  };
+  
+  
+  // Check to see if they're allowed to set that value.
+  @assert u(fn.validvalue, %q0, %q1, %3) = {
+    @pemit %#= %chGAME>%cn  Accepted values for %ch%q1%cn are 
+      [itemize(
+        iter( u(fn.getvalues, %q0, %q1) ,%ch##%cn,|,|
+        ),|
+      )]
+  	};
+  
+  // If the value is blank, remove the stat!
+  @if not(words(%3)) = {
+    &_[if(strmatch(%q1, *.*),[edit(%q1,%b,_)],%q0.[edit(%q1,%b,_)])].perm %# =;
+    &_[if(strmatch(%q1, *.*),[edit(%q1,%b,_)],%q0.[edit(%q1,%b,_)])].temp %# =;
+    @dolist lattr(%#/_%1.*) = &## %#=;
+    @pemit %# =%chGame>%cn Done! 
+      %ch[capstr(
+        [if(
+          strmatch(%q1,*.*), 
+          after(%q1,.),
+          %q1)]
+        )]%cn has been removed.;
+  },
+  {
+    // do the thing!
+    @tr me/tr.setstat = %#, if(strmatch(lcstr(%1),me),%#,pmatch(%1)), %q0, %q1, %3
+  }
+  
+  
+/*
+----- fn.getvalues -----------------------------------------------------------
+
+	Get the values declared for a stat via values.<stat> on the prereq system.
+
+------------------------------------------------------------------------------
+*/
+
+&fn.getvalues #31=
+	switch(1,
+		hasattr(#34,values.[edit(%1,%b,_)]), get(#34/values.[edit(%1,%b,_)]),
+    hasattr(#34,values.[%0]), get(#34/values.[%0])
+  )
+
+/*
+----- fn.getvalues -----------------------------------------------------------
+
+	Get the values declared for a stat via values.<stat> on the prereq system.
+
+------------------------------------------------------------------------------
+*/
+
+&fn.validvalue #31=
+	switch(1,
+  	// Check to see if we have values for the specific stat.
+  	neq(words(u(fn.getvalues, %0, %1),|),0), match(u(fn.getvalues,%0,%1), %2,|),
+    
+    // if there's no values default to passing.
+    1
+  )
+  
+  
+/*
+------ tr.setstat --------------------------------------------------------------
+
+	Used to do the actual setting of the stats.  The command passes it's values
+  to this trigger.  Once done, tr.setstat calls a trigger itsself.
+
+	Registers
+	%0: Executor
+  %1: Target
+  %2: type
+  %3: name
+  %4: value
+
+------------------------------------------------------------------------------
+*/
+
+&tr.setstat #31=    
+	@switch 1=
+  	strmatch(%3, *.*), {
+      &_[before(%3,.)].[edit(after(%3,.),%b,_)].perm *%1=%4;
+      &_[before(%3,.)].[edit(after(%3,.),%b,_)].temp *%1=%4;
+      @pemit %0=%chGame>%cn Done! %ch%3%cn has been set to %ch%4%cn;  
+    },{
+    	&_[before(%2,.)].[edit(%3,%b,_)].perm *%1=%4;
+      &_[before(%2,.)].[edit(%3,%b,_)].temp *%1=%4;
+      @pemit %0=%chGame>%cn Done! %ch%3%cn has been set to %ch%4%cn;
+    }
+
+
+/*
+----- fn.whichlist -----------------------------------------------------------
+------------------------------------------------------------------------------
+*/
+&fn.whichlist #31 =
+  first(
+    trim(    
+      iter(
+        lattr(#32),
+        if(
+          match( lcstr(get(#32/##)), [lcstr(if(strmatch(%0,*.*),before(%0,.),%0))]*, |),
+          ##
+        )
+      )
+    )
+	)
+
+&fn.whichstat #31 =
+  [first(
+    trim(    
+      iter(
+        lattr(#32),
+        if(
+          match( lcstr(get(#32/##)), [lcstr(if(strmatch(%0,*.*),before(%0,.),%0))]*, |),
+          ##:
+          [grab(
+          	lcstr(get(#32/##)),
+            lcstr(%0*), |
+          )]
+        )
+      )
+    )
+	)]
+
+&fn.statname #31 =
+	[setq(0, u(fn.whichlist,before(%0, %( )))]
+  [setq(1,after(before(%0, %)), %( ))]
+  [if(
+  	strmatch(%0, *.*),
+    %0,
+    [u(fn.capstr, extract(
+      get(#32/%q0),
+      lcstr(match(get(#32/%q0),[lcstr(before(%0, %())]*,|)),
+      1, |
+    ))]
+    [if(words(%q1), %([u(fn.capstr,%q1)]%) )] 
+  )]
+  
+&fn.getstat #31 =
+	default(%0/_[u(fn.whichlist, before(%1, %())].[edit(ulocal(fn.statname,%1),%b,_)].perm, 0)
+
+&fn.getstat.temp #31 =
+	default(%0/_[u(fn.whichlist, before(%1, %( ))].[edit(ulocal(fn.statname,%1),%b,_)].temp, 0)
+  
+&fn.stats #31 = 
+  trim(
+    [ifelse(
+      hasattr(#32, %1.[get(%0/_bio.template.perm)]),
+      get(#32/%1.[get(%0/_bio.template.perm)]),
+      get(#32/%1)
+    )],|,|
+  )
+
+&fn.capstr #31 =
+	iter(%0, capstr(lcstr(##)))
+
+&fn.format #31 = 
+	[setq(x, u(fn.getstat, %0, %1))]
+  [setq(y, u(fn.getstat.temp, %0, %1))]
+  [setq(z, if(eq(%qx,%qy),%qx,%qx%(%qy%)))]
+  [ljust(
+  	%ch[u(fn.statname, edit(%1,_,%b))]%cn, 
+    sub(
+    	if(%2,%2,25),
+      strlen(%qz)
+    ),
+    %ch%cx.%cn 
+  )]
+  %ch[if(eq(%qz,0), -,%qz)]%cn
+
+&fn.sheet.bio #31=
+ 	[columns(   
+    iter(
+      u(fn.stats, %0, bio),
+      [ljust(%ch[u(fn.capstr, ## )]:%cn, 12)][u(fn.capstr,get(%0/_bio.[edit(##,%b,_)].perm))] ,|,|
+    ), 39, |
+	)]
+
+&fn.sheet.stats #31=
+	[center(%b%chAttributes%cn%b, 78, - )]%r
+  [center(Physical, 26)]
+  [center(Social,   add(26, %qb))]
+  [center(Mental,   26)]
+  %r[ulocal(fn.format, %0, strength)]%b[ulocal(fn.format, %0, charisma )]%b[ulocal(fn.format, %0, intelligence)]
+  %r[ulocal(fn.format, %0, dexterity)]%b[ulocal(fn.format, %0, manipulation )]%b[ulocal(fn.format, %0, wits)]
+  %r[ulocal(fn.format, %0, stamina)]%b[ulocal(fn.format, %0, composure )]%b[ulocal(fn.format, %0, resolve)]
+
+&fn.sheet.skills #31=
+    [setq(0,ulocal(fn.sheet.buildskills, %0, physical ))]
+    [setq(1,ulocal(fn.sheet.buildskills, %0, social,  add(%qa, %qb) ))]
+    [setq(2,ulocal(fn.sheet.buildskills, %0, mental))]
+    [setq(3,max(words(%q0,|),words(%q1,|),words(%q2,|)))]
+		[center(%b%chSkills%cn%b,78,-)]
+    [iter(
+      after(lnum(%q3),0),
+      %r[ljust(
+        if(
+          strmatch(extract(%q0,##,1,|),*..*),
+          extract(%q0,##,1,|), 
+          %b%b%b[extract(%q0,##,1,|)] 
+        ), 26 
+      )]
+      [ljust(
+        if(
+          strmatch(extract(%q1,##,1,|),*..*),
+          extract(%q1,##,1,|), 
+          %b%b%b[extract(%q1,##,1,|)] 
+        ), 26 
+      )]
+      [ljust(
+        if(
+          strmatch(extract(%q2,##,1,|),*..*),
+          extract(%q2,##,1,|), 
+          %b%b%b[extract(%q2,##,1,|)] 
+        ), 26 
+      )]
+    )]
+  
+&skills.physical #31 = 
+	athletics|
+  brawl|
+  craft|
+  drive|
+  firearms|
+  larceny|
+  melee|
+  stealth|
+  survival
+  
+&skills.social #31=
+	animal ken|
+  etiquette|
+  insight|
+  intimidation|
+  leadership|
+  performance|
+  persuasion|
+  streetwise|
+  subterfuge
+  
+&skills.mental #31= 
+	academics|
+  awareness|
+  finance|
+  investigation|
+  medicine|
+  occult|
+  politics|
+  science|
+  technology
+
+&fn.sheet.buildskills #31=	
+  [setq(0,
+    iter(
+      get(me/skills.%1),
+      if(
+        u(fn.getstat, %0, ##),
+        [ulocal(fn.format, %0, ##)]|
+        [iter(
+          lattr(%0/_##.*.perm),
+          [ljust(
+            %ch[before(u(
+              fn.capstr, 
+              edit(after(itext(0),_[ucstr(##)].),_,%b)
+              ),.perm)]%cn|, 
+            if(isnum(%2),%2, 24) 
+          )]
+        )],
+        [ulocal(fn.format, %0, ##)]|
+      ),|
+    )
+  )]
+  [iter(%q0,if(words(##),trim(##),%b),|,|)]
+
+&fn.sheet.disciplines  #31=
+	[center(%b%chDisciplines%cn%b, 78, - )]
+  [iter(
+  	sort(lattr(%0/_disciplines.*.perm)),
+    %r[u(fn.format, %0,before(after(##,_DISCIPLINES.),.PERM),77)]
+    [iter(
+    	sort(lattr(%0/_[before(after(itext(0),_DISCIPLINES.),.PERM)].*.perm)), 
+      %r[rjust(
+      	u(
+        	fn.format, 
+        	%0, 
+          edit(
+          	before(
+            	after(
+              	itext(0), 
+              	_[before(after(##,_DISCIPLINES.),.PERM)].
+              ),
+              .PERM
+            ) , _, %b ), 73 
+        ), 77 
+      )]
+    )]
+  )]
+
+&fn.sheet.merits #31 = 
+	[center(%b%chMerits%cn%b,78, - )]
+ 	[iter(
+    lattr(%0/_MERITS.*.PERM),
+    %R[ulocal(fn.format, %0, lcstr(before(after(##,_MERITS.),.PERM)),77 )]
+   )] 
+
+&fn.sheet.flaws #31 = 
+	[center(%b%chFlaws%cn%b, 78, - )]
+ 	[iter(
+    lattr(%0/_FLAWS.*.PERM),
+    %R[ulocal(fn.format, %0, lcstr(before(after(##,_FLAWS.),.PERM)),77 )]
+   )] 
+     
+&fn.sheet #31=
+	[center(%b%ch%ccCharacter Sheet for [name(pmatch(%0))]%cn%b,78, = )]%r
+	[u(fn.sheet.bio, %0)]
+  [u(fn.sheet.stats, %0)]%r
+  [u(fn.sheet.skills, %0)]%r
+  [if(words(lattr(%0/_DISCIPLINES.*)),
+  	[u(fn.sheet.disciplines, %0)]%r
+  )]
+  [if(words(lattr(%0/_MERITS.*)),
+  	[u(fn.sheet.merits, %0)]%r
+  )]
+  [if(words(lattr(%0/_FLAWS.*)),
+  	[u(fn.sheet.flaws, %0)]%r
+  )]
+  [repeat(=,78)]
+  
+&cmd.sheet #31=$+sheet:
+	@pemit %#=u(fn.sheet, %#)
+
+&cmd.sheet2 #31=$+sheet *:
+	@pemit %#=u(fn.sheet, *%0)
+
+&fn.prereqs #34=
+  	not(strmatch( 
+    	iter(
+  			%1,
+        if(
+        	strmatch(lcstr( before(##,:)), flags),
+        	orflags(%0, after(##,:)),
+    			strmatch(
+      			lcstr(u(#31/fn.getstat, %0, before(##,:))), 
+        		lcstr(after(##,:))
+    			)
+        )
+     	), *0* 
+  	))
+  
+  
+&fn.checkbox #31 = 
+	%[[if(%0,%ch%cgOK%cn, %ch%crNO%cn)]%]
+
+&fn.goodnum #31 = 
+	%ch[switch(1,
+  	lt(%0,%1),%cy%0,
+    gt(%0,%1),%cr%0,
+    %cg%0
+  )]%cn
+  
+&fn.cg.check.bio #31=
+	[center( %b%chBio%cn%b,78, - )]%r
+  [columns(   
+    iter(
+      u(fn.stats, %0, bio),
+      [ljust(%ch[u(fn.capstr, ## )]%cn, 12)][u(fn.checkbox, hasattr(%0,_bio.[edit(##,%b,_)].perm ))] ,|,|
+    ), 39, |
+	)]
+  
+  
+&fn.cg.check.stats #31=
+	[center( %b%chAttributes & Skills%cn%b,78, - )]%r
+  [u(fn.goodnum, u(fn.statcount, %0, stats, 4), 1)]%cn of %ch1%cn Attributes at 4 
+  	[u(fn.checkbox, eq([u(fn.statcount, %0, stats, 4)],1) )]%r
+  [u(fn.goodnum, u(fn.statcount, %0, stats, 3), 3)]%cn of %ch3%cn Attributes at 3 
+  	[u(fn.checkbox, eq([u(fn.statcount, %0, stats, 3)],3) )]%r
+  [u(fn.goodnum, u(fn.statcount, %0, stats, 2), 4)]%cn of %ch4%cn Attributes at 2 
+  	[u(fn.checkbox, eq([u(fn.statcount, %0, stats, 2)],4) )]%r
+  [u(fn.goodnum, u(fn.statcount, %0, stats, 1), 1)]%cn of %ch1%cn Attributes at 1 
+  	[u(fn.checkbox, eq([u(fn.statcount, %0, stats, 1)],1) )]
+  	
+
+&fn.statcount #31=
+	ladd(
+    iter(
+      lattr(%0/_%1.*.perm),
+      if(eq(get(%0/##),%2),1,0)
+    )
+  )
+
+
+&cmd.cg.check #31=$[+@]cg\/check:
+  @pemit %#=
+  	[center(
+    	%b%ch%cc+cg/check%b[if(words(%1),[name(pmatch(%1))],[name(%#)])]%b, 78, =
+    )]%r
+    [u(fn.cg.check.bio,%#)]
+    [u(fn.cg.check.stats, %#)]
+  
+@set #31/cmd.cg.check = r
+
+
+
+
+@Startup #62=
+    @dolist lattr( %!/ufunc.* )=
+        @function/preserve [rest( ##, . )]=%!/##;
+    @dolist lattr( %!/ufunc/privileged.* )=
+        @function/preserve/privileged [rest( ##, . )]=%!/##
+        
+&f.wheader #62=
+    center(%ch%b%0%b%cn,78,=)
+
+&ufunc/privileged.wheader #62=u( #62/f.wheader, %0)
+&f.wfooter #62=
+    center(%ch%b%0%b%cn,78,=)
+
+&ufunc/privileged.wfooter #62=u( #62/f.wfooter, %0)
+&f.wdivider #62=
+    center(%ch%b%0%b%cn,78,-)
+
+&ufunc/privileged.wdivider #62=u( #62/f.wdivider, %0)
+
+
