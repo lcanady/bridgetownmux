@@ -173,3 +173,37 @@
   clairvoyance|
   posession|
   telepathy
+
+
+  &skills.physical #31 = 
+	athletics|
+  brawl|
+  craft|
+  drive|
+  firearms|
+  larceny|
+  melee|
+  stealth|
+  survival
+  
+&skills.social #31=
+	animal ken|
+  etiquette|
+  insight|
+  intimidation|
+  leadership|
+  performance|
+  persuasion|
+  streetwise|
+  subterfuge
+  
+&skills.mental #31= 
+	academics|
+  awareness|
+  finance|
+  investigation|
+  medicine|
+  occult|
+  politics|
+  science|
+  technology

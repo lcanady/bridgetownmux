@@ -19,18 +19,44 @@
  	[columns(   
     iter(
       u(fn.stats, %0, bio),
-      [ljust(%ch[u(fn.capstr, ## )]:%cn, 12)][u(fn.capstr,get(%0/_bio.[edit(##,%b,_)].perm))] ,|,|
+      [ljust(%ch[u(fn.capstr, ## )]:%cn, 12)]
+      [u(fn.capstr,get(%0/_bio.[edit(##,%b,_)].perm))] ,|,|
     ), 39, |
 	)]
 
+/*
+=============================================================================
+===== fn.sheet.stata ========================================================
+
+display a stat sheet for a character
+
+registers:
+%0: character
+*/
 &fn.sheet.stats #31=
 	[center(%b%chAttributes%cn%b, 78, - )]%r
   [center(Physical, 26)]
-  [center(Social,   add(26, %qb))]
-  [center(Mental,   26)]
-  %r[ulocal(fn.format, %0, strength)]%b[ulocal(fn.format, %0, charisma )]%b[ulocal(fn.format, %0, intelligence)]
-  %r[ulocal(fn.format, %0, dexterity)]%b[ulocal(fn.format, %0, manipulation )]%b[ulocal(fn.format, %0, wits)]
-  %r[ulocal(fn.format, %0, stamina)]%b[ulocal(fn.format, %0, composure )]%b[ulocal(fn.format, %0, resolve)]
+  [center(Social,   26)]
+  [center(Mental,   26)]%r
+  [ulocal(fn.format, %0, strength)]%b
+  [ulocal(fn.format, %0, charisma )]%b
+  [ulocal(fn.format, %0, intelligence)]%r
+  [ulocal(fn.format, %0, dexterity)]%b
+  [ulocal(fn.format, %0, manipulation )]%b
+  [ulocal(fn.format, %0, wits)]%r
+  [ulocal(fn.format, %0, stamina)]%b
+  [ulocal(fn.format, %0, composure )]%b
+  [ulocal(fn.format, %0, resolve)]
+
+/*
+=============================================================================
+===== fn.sheet.stata ========================================================
+
+display a stat sheet for a character
+
+registers:
+%0: character
+*/
 
 &fn.sheet.skills #31=
     [setq(0,ulocal(fn.sheet.buildskills, %0, physical ))]
@@ -63,59 +89,45 @@
       )]
     )]
   
-&skills.physical #31 = 
-	athletics|
-  brawl|
-  craft|
-  drive|
-  firearms|
-  larceny|
-  melee|
-  stealth|
-  survival
-  
-&skills.social #31=
-	animal ken|
-  etiquette|
-  insight|
-  intimidation|
-  leadership|
-  performance|
-  persuasion|
-  streetwise|
-  subterfuge
-  
-&skills.mental #31= 
-	academics|
-  awareness|
-  finance|
-  investigation|
-  medicine|
-  occult|
-  politics|
-  science|
-  technology
 
+/*
+=============================================================================
+===== fn.sheet.buildskills ==================================================
+
+Builds a list of skills for a given category.
+
+Registers:
+  %0 - character
+  %1 - category
+  %2 - width (optional)
+
+-----------------------------------------------------------------------------
+*/
+*/
 &fn.sheet.buildskills #31=	
   [setq(0,
-    iter(
-      get(me/skills.%1),
-      if(
-        u(fn.getstat, %0, ##),
-        [ulocal(fn.format, %0, ##)]|
-        [iter(
-          lattr(%0/_##.*.perm),
-          [ljust(
-            %ch[before(u(
-              fn.capstr, 
-              edit(after(itext(0),_[ucstr(##)].),_,%b)
-              ),.perm)]%cn|, 
-            if(isnum(%2),%2, 24) 
-          )]
-        )],
-        [ulocal(fn.format, %0, ##)]|
-      ),|
-    )
+      iter(
+          get(me/skills.%1),
+          if(
+              u(fn.getstat, %0, ##),
+              [ulocal(fn.format, %0, ##)]|
+              [iter(
+                  lattr(%0/_##.*.perm),
+                  [ljust(
+                      %ch[before(u(
+                          fn.capstr, 
+                          edit(
+                              after(itext(0),_[ucstr(##)].),
+                              _,
+                              %b
+                          )
+                        ),.perm)]%cn|, 
+                      if(isnum(%2),%2, 24) 
+                  )]
+              )],
+            [ulocal(fn.format, %0, ##)]|
+          ),|
+      )
   )]
   [iter(%q0,if(words(##),trim(##),%b),|,|)]
 
