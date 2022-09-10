@@ -1,10 +1,52 @@
-&cmd.cg/wipe #31 = $+cg/wipe:
+/*
+##### STAT SYSTEM Setup #####################################################
+#############################################################################
+*/
+
+@if not(hasattr(me, d.cco)) = {
+  @create Chargen Command Object <CCO>;
+  @fo me=&.d.cco = [search(name=Chargen Command Object <CCO>)];
+  @fo me = @set v(d.cco) = safe inherit;
+}
+
+
+@if not(hasattr(me, d.cdo)) = {
+  @create Chargen Data Object <CDO>;
+  @fo me=&.d.cco = [search(name=Chargen Command Object <CCO>)];
+  @fo me = @set v(d.cco) = safe inherit;
+}
+
+@va [v(d.cco)] = [get(me/d.cdo)]
+
+/*
+===== cg/wipe ===============================================================
+----------------------------------------------------------------------------- 
+ 
+ Reset your character's chargen process.
+
+-----------------------------------------------------------------------------
+*/
+
+&cmd.cg/wipe [v(d.cco)] = $+cg/wipe:
 	@dolist lattr(%#/_*) = &## %#=;
   @pemit %#=%chGame>%cn Character reset.
 
 
-&cmd.cg/set #31=$[+@]?cg\/set\s+(.*)\s*=\s*(.*)?:
+/*
+===== cg/set ================================================================
+----------------------------------------------------------------------------- 
+ 
+  Set a chargen attribute.
+
+  SYNTAX: +cg/set <stat> = <value>
+
+  ---------------------------------------------------------------------------
+*/
+
+&cmd.cg/set [v(d.cco)]=$[+@]?cg\/set\s+(.*)\s*=\s*(.*)?:
 	@fo %#=+stats/set %#/%1=%2;
+
+@set [v(d.cco)]/cmd.cg/set = r
 
 /*
 ===== stat/set ===============================================================
@@ -32,11 +74,11 @@
 */
 
 
-&cmd.stats #31=$[+@]?stat[s]?\/set\s+(.*)\/(.*)\s*=\s*(.*)?:
+&cmd.stats [v(d.cco)]=$[+@]?stat[s]?\/set\s+(.*)\/(.*)\s*=\s*(.*)?:
 	
   // Make sure they're either not approved, or are staff.
   @assert or(not(hasflag(%#,approved)), orflags(%#,wWZ)) = {
-  	msg(%#, You may not use this command once approved!)
+    @pemit %#= %chGame>%cn You can't set stats on approved characters.
   };
   
   // Make sure they have permissions to set stats on the given
@@ -51,7 +93,7 @@
   };
   
   // Find and extract the partial matched stat.
-  [setq(0, u(fn.whichlist, before(%2,%()) )]
+  [setq(0, u(fn.whichlist, before(%2,%()) ))]
   [setq(1, ulocal(fn.statname, %2 ))]
   [setq(2, before(after(%2,%(),%)))];
   
@@ -64,22 +106,22 @@
   // Check to see if they're allowed to set the stat.
   @assert 
   	if(
-        hasattr(#34,pre.[edit(%q1,%b,_)]), 
-        u(#34/fn.prereqs, %1, get(#34/pre.[edit(%q1,%b,_)]) ),
-        u(#34/fn.prereqs, %1, get(#34/pre.[edit(%q0,%b,_)]) )
+        hasattr(%va, pre.[edit(%q1,%b,_)]), 
+        u( fn.prereqs, %1, get(%va/pre.[edit(%q1,%b,_)]) ),
+        u( fn.prereqs, %1, get(%va/pre.[edit(%q0,%b,_)]) )
     ) =  {
   	@pemit %#= %chGame>%cn 
         [if(
-            hasattr(#34, pre.error.[edit(%q1,%b,_)]),
-            get(#34/pre.error.[edit(%q1,%b,_)]),
-            default(#34/pre.error.%q0, You can't set that here.)
+            hasattr(%va, error.[edit(%q1,%b,_)]),
+            get(%va/error.[edit(%q1,%b,_)]),
+            default(%va/error.%q0, You can't set that here.)
         )]
   };
   
   
   // Check to see if they're allowed to set that value.
   @assert u(fn.validvalue, %q0, %q1, %3) = {
-    @pemit %#= %chGAME>%cn  Accepted values for %ch%q1%cn are 
+    @pemit %#= %chGame>%cn  Accepted values for %ch%q1%cn are 
       [itemize(
         iter( u(fn.getvalues, %q0, %q1) ,%ch##%cn,|,|
         ),|
@@ -105,7 +147,7 @@
   }
 
  // Make sure we set the command to use regex matching!
- @set #31/cmd.stats = r
+ @set [v(d.cco)]/cmd.stats = r
 
   
 /*
@@ -116,10 +158,10 @@
 ------------------------------------------------------------------------------
 */
 
-&fn.getvalues #31=
+&fn.getvalues [v(d.cco)]=
 	switch(1,
-		hasattr(#34,values.[edit(%1,%b,_)]), get(#34/values.[edit(%1,%b,_)]),
-    hasattr(#34,values.[%0]), get(#34/values.[%0])
+		hasattr([v(d.cdo)],values.[edit(%1,%b,_)]), get([v(d.cdo)]/values.[edit(%1,%b,_)]),
+    hasattr([v(d.cdo)],values.[%0]), get([v(d.cdo)]/values.[%0])
   )
 
 /*
@@ -130,7 +172,7 @@
 ------------------------------------------------------------------------------
 */
 
-&fn.validvalue #31=
+&fn.validvalue [v(d.cco)]=
 	switch(1,
   	// Check to see if we have values for the specific stat.
   	neq(words(u(fn.getvalues, %0, %1),|),0), match(u(fn.getvalues,%0,%1), %2,|),
@@ -156,79 +198,131 @@
 ------------------------------------------------------------------------------
 */
 
-&tr.setstat #31=    
+&tr.setstat [v(d.cco)]=    
 	@switch 1=
-  	strmatch(%3, *.*), {
+    strmatch(%3, *.*), {
       &_[before(%3,.)].[edit(after(%3,.),%b,_)].perm *%1=%4;
       &_[before(%3,.)].[edit(after(%3,.),%b,_)].temp *%1=%4;
-      @pemit %0=%chGame>%cn Done! %ch%3%cn has been set to %ch%4%cn;  
     },{
     	&_[before(%2,.)].[edit(%3,%b,_)].perm *%1=%4;
       &_[before(%2,.)].[edit(%3,%b,_)].temp *%1=%4;
-      @pemit %0=%chGame>%cn Done! %ch%3%cn has been set to %ch%4%cn;
-    }
+    };
+    
+  @pemit %0=%chGame>%cn Done! %ch%3%cn has been set to %ch%4%cn;  
 
 
 /*
 ----- fn.whichlist -----------------------------------------------------------
 ------------------------------------------------------------------------------
 */
-&fn.whichlist #31 =
+&fn.whichlist [v(d.cco)] =
   first(
     trim(    
       iter(
-        lattr(#32),
+        lattr(%va/list.*),
         if(
-          match( lcstr(get(#32/##)), [lcstr(if(strmatch(%0,*.*),before(%0,.),%0))]*, |),
-          ##
-        )
+          match( 
+            lcstr(get(%va/##)), 
+            [lcstr(if(strmatch(%0,*.*),before(%0,.),%0))]*, |),
+          after( ##, . )
+        ) 
       )
     )
 	)
 
-&fn.whichstat #31 =
-  [first(
-    trim(    
-      iter(
-        lattr(#32),
-        if(
-          match( lcstr(get(#32/##)), [lcstr(if(strmatch(%0,*.*),before(%0,.),%0))]*, |),
-          ##:
-          [grab(
-          	lcstr(get(#32/##)),
-            lcstr(%0*), |
-          )]
-        )
-      )
-    )
-	)]
+/*
+----- fn.statname ------------------------------------------------------------
 
-&fn.statname #31 =
-	[setq(0, u(fn.whichlist,before(%0, %( )))]
+Match a stat name from a partial match.
+
+registers:
+  %0: stat name
+
+------------------------------------------------------------------------------
+*/
+
+&fn.statname [v(d.cco)] =
+	[setq(0, list.[u(fn.whichlist,before(%0, %( ))])]
   [setq(1,after(before(%0, %)), %( ))]
   [if(
   	strmatch(%0, *.*),
     %0,
     [u(fn.capstr, extract(
-      get(#32/%q0),
-      lcstr(match(get(#32/%q0),[lcstr(before(%0, %())]*,|)),
+      get(%va/%q0),
+      lcstr(match(get(%va/%q0),[lcstr(before(%0, %())]*,|)),
       1, |
     ))]
     [if(words(%q1), %([u(fn.capstr,%q1)]%) )] 
   )]
-  
-&fn.getstat #31 =
-	default(%0/_[u(fn.whichlist, before(%1, %())].[edit(ulocal(fn.statname,%1),%b,_)].perm, 0)
+/*
+----- fn.getstat ------------------------------------------------------------
+-----------------------------------------------------------------------------
 
-&fn.getstat.temp #31 =
-	default(%0/_[u(fn.whichlist, before(%1, %( ))].[edit(ulocal(fn.statname,%1),%b,_)].temp, 0)
-  
-&fn.stats #31 = 
-  trim(
-    [ifelse(
-      hasattr(#32, %1.[get(%0/_bio.template.perm)]),
-      get(#32/%1.[get(%0/_bio.template.perm)]),
-      get(#32/%1)
-    )],|,|
+get a stat value.
+sytnax: getstat(<player>, <stat name>);
+
+-----------------------------------------------------------------------------
+*/
+&fn.getstat [v(d.cco)] =
+	default(
+    %0/_
+      [u(
+        fn.whichlist, 
+        before(%1, %()
+      )].[edit(ulocal(fn.statname,%1),%b,_)].perm,
+     0
   )
 
+// Make the function into a global.
+&global.fn.getstat [v(d.cco)] = u(fn.getstat, %0, %1)
+
+/*
+----- fn.getstat ------------------------------------------------------------
+-----------------------------------------------------------------------------
+
+get a stat value.
+sytnax: getstat(<player>, <stat name>);
+
+-----------------------------------------------------------------------------
+*/
+
+&fn.getstat.temp [v(d.cco)] =
+	default(
+    %0/_
+      [u(
+        fn.whichlist, 
+        before(%1, %( )
+      )].[edit(ulocal(fn.statname,%1),%b,_)].temp,
+    0
+  )
+
+// Make the function into a global.
+&global.gettempstat [v(d.cco)] = u(fn.getstat.temp, %0, %1)
+
+/*
+===== fn.prereqs =============================================================
+------------------------------------------------------------------------------
+
+The prereq system is a quick way to lock a stat to a specifc set of rules.
+SYNTAX: pre.<stat> = [<stat>:<value>] [<stat>:<value>] [...]
+
+registers:
+  %0: target
+  %1: prereq list.
+
+------------------------------------------------------------------------------
+*/
+&fn.prereqs [v(d.cco)]=
+  	not(strmatch( 
+    	iter(
+  			%1,
+        if(
+        	strmatch(lcstr( before(##,:)), flags),
+        	orflags(%0, after(##,:)),
+    			strmatch(
+      			lcstr(u(fn.getstat, %0, before(##,:))), 
+        		lcstr(after(##,:))
+    			)
+        )
+     	), *0* 
+  	))

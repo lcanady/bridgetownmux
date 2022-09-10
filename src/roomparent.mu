@@ -16,14 +16,16 @@ think Starting setup of Global Room Parent.
 @if not(hasattr(me, d.grp)) = {
 		@dig Global Room Parent <GRP>;
 		// save a copy of the GRP dbref onto your alt.
-		@fo me = &d.grp %# = [lastcreate(me, r)];
-		@set [v(d.grp)] = safe float inherit
+		@fo me = &d.grp %# = [search( name=Global Room Parent )];
+		@fo me = @set [v(d.grp)] = safe float inherit
 	}
 
+// if the golbal exit parent doesn't exist, create it.
 @if not(hasattr(me, d.gep)) = {
 		@open Global Exit Parent <GEP>;
 		// save a copy of the GRP dbref onto your alt.
-		@fo me = &d.gep %# = [lastcreate(me, r)];
+		@fo me = &d.gep %# = search( name=Global Exit Parent );
+		@fo me = get [v(d.gep)]
 	}
 
 // Default room description.

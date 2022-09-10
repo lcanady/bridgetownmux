@@ -1,12 +1,5 @@
-&bio #32=
-	full name|
-  concept|
-  birthdate|
-  template|
-  ambition|
-  desire
 
-&bio.vampire #32=
+&list.bio [v(d.cdo)]=
 	full name|
   concept|
   birthdate|
@@ -18,7 +11,24 @@
   predator|
   generation
 
-&stats #32=
+&values.clan [v(d.cdo)]=
+    brujah|
+    gangrel|
+    malkavian|
+    nosferatu|
+    toreador|
+    tremere|
+    venture|
+    caitiff|
+    thin-blood
+
+
+
+
+&pre.clan [v(d.cdo)]= template:vampire
+&error.clan [v(d.cdo)]= Template required: Vampire.
+
+&list.stats [v(d.cdo)]=
 	strength|
   dexterity|
   stamina|
@@ -29,7 +39,7 @@
   wits|
   resolve
   
-&skills #32=
+&list.skills [v(d.cdo)]=
 	athletics|
   brawl|
   craft|
@@ -60,7 +70,7 @@
   occult|
   technology
 
-&flaws #32 =
+&list.flaws [v(d.cdo)] =
 	illiterate|
   repulsive|
   ugly|
@@ -101,7 +111,7 @@
   shunned|
   suspect|
   
-&merits #32 = 
+&list.merits [v(d.cdo)] = 
 	beautiful|
   stunning|
   bond resistance|
@@ -130,13 +140,13 @@
   resources|
   status
   
-&pools #32=
+&list.pools [v(d.cdo)]=
 	health|
   willpower|
   hunger|
   humanity
 
-&disciplines #32 = 
+&list.disciplines [v(d.cdo)] = 
 	animalism|
   auspex|
   celerity|
@@ -150,7 +160,7 @@
   rituals|
   thin-blood alchemy
 
-&animalism #32 =
+&list.animalism [v(d.cdo)] =
 	bond famulus|
   sense beast|
   feral whispers|
@@ -163,7 +173,7 @@
   
 
 
-&auspex #32 = 
+&list.auspex [v(d.cdo)] = 
 	heightened senses|
   sense the unseen|
   premonition|
@@ -173,6 +183,131 @@
   clairvoyance|
   posession|
   telepathy
+
+
+&list.celerity [v(d.cdo)] =
+  cat's grace|
+  rapid reflexes|
+  fleetness|
+  blink|
+  traversal|
+  draught of elegance|
+  unerring aim|
+  lightning strike|
+  split second
+
+
+&list.dominate [v(d.cdo)] =
+    cloud memory|
+    compel|
+    mesmerize|
+    dementation|
+    the forgetuful mind|
+    submerged directive|
+    rationalize|
+    mass manipulation|
+    terminal decree
+
+
+&list.fortitude [v(d.cdo)] =
+    resilience|
+    unsayable mind|
+    toughness|
+    enduring beasts|
+    defy bane|
+    fortify the inner facade|
+    draught of endurance|
+    flesh of marble|
+    prowesss from pain
+
+&list.obfuscate [v(d.cdo)] =
+    cloak of shadows|
+    silence of death|
+    unseen passage|
+    ghost in the machine|
+    mask if a thousand faces|
+    concel|
+    vanish|
+    cloak of the gathering|
+    imposter's curse
+
+&list.potence [v(d.cdo)] =
+    lethal body|
+    soaring leap|
+    prowess|
+    brutal feed|
+    spark of rage|
+    uncanny grip|
+    draught of might|
+    earthshock|
+    fist of cane 
+
+&list.presence [v(d.cdo)] =
+    awe|
+    daunt|
+    lingering kiss|
+    dread gaze|
+    entrancement|
+    irresistible voice|
+    summon|
+    majesty|
+    star magnetism
+
+&list.protean [v(d.cdo)] =
+    eyes of the beast|
+    weight of the feather|
+    feral weapons|
+    earth meld|
+    shapechange|
+    metempophosis|
+    mist form|
+    the unfettered beast|
+
+&list.blood_sorcery [v(d.cdo)] =
+    corrosive vitae|
+    a taste for blood|
+    extinguish vitae|
+    blood of potency|
+    scorpion's touch|
+    theft of vitae|
+    baal's caress|
+    cauldron of blood
+
+&list.rituals [v(d.cdo)] = 
+    blood walk|
+    cling of the insect|
+    craft bloodstone|
+    walk with evening's freshness|
+    ward against ghouls|
+    eyes of babel|
+    illuminate the trail of prey|
+    truth of blood|
+    ward against spirits|
+    warding circle against ghouls|
+    dragon's call|
+    defelction of wooden doom|
+    esscence of air|
+    firewalker|
+    ward against lupines|
+    warding circle against spirits|
+    defense of the sacred haven|
+    eyes of the nighthawk|
+    incorporeal passage|
+    ward against canites|
+    warding circle against lupines|
+    escape to true sanctuary|
+    heart of stone|
+    shaft of belated dissolution|
+    warding circle against canites|
+
+&list.thin-blood_alchemy [v(d.cdo)]=
+    far reach|
+    envelop|
+    defractionate|
+    profane heroes gamos|
+    airborne momentum|
+    awaken the sleeper
+
 
 
   &skills.physical #31 = 
@@ -207,3 +342,7 @@
   politics|
   science|
   technology
+
+&values.stats [v(d.cdo)] = 1|2|3|4|5|6
+&values.skills [v(d.cdo)] = 0|1|2|3|4|5|6|7|8|9|10
+

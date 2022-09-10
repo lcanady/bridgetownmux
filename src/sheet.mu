@@ -1,5 +1,14 @@
 &fn.capstr #31 =
 	iter(%0, capstr(lcstr(##)))
+  
+&fn.stats #31 = 
+  trim(
+    [ifelse(
+      hasattr(#32, %1.[get(%0/_bio.template.perm)]),
+      get(#32/%1.[get(%0/_bio.template.perm)]),
+      get(#32/%1)
+    )],|,|
+  )
 
 &fn.format #31 = 
 	[setq(x, u(fn.getstat, %0, %1))]
@@ -56,6 +65,7 @@ display a stat sheet for a character
 
 registers:
 %0: character
+----------------------------------------------------------------------------
 */
 
 &fn.sheet.skills #31=
