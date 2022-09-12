@@ -1,16 +1,4 @@
-&fn.capstr #31 =
-	iter(%0, capstr(lcstr(##)))
-  
-&fn.stats #31 = 
-  trim(
-    [ifelse(
-      hasattr(#32, %1.[get(%0/_bio.template.perm)]),
-      get(#32/%1.[get(%0/_bio.template.perm)]),
-      get(#32/%1)
-    )],|,|
-  )
-
-&fn.format #31 = 
+&fn.format [v(d.cco)] = 
 	[setq(x, u(fn.getstat, %0, %1))]
   [setq(y, u(fn.getstat.temp, %0, %1))]
   [setq(z, if(eq(%qx,%qy),%qx,%qx%(%qy%)))]
@@ -24,14 +12,34 @@
   )]
   %ch[if(eq(%qz,0), -,%qz)]%cn
 
-&fn.sheet.bio #31=
+&fn.sheet.bio [v(d.cco)]=
  	[columns(   
     iter(
       u(fn.stats, %0, bio),
       [ljust(%ch[u(fn.capstr, ## )]:%cn, 12)]
       [u(fn.capstr,get(%0/_bio.[edit(##,%b,_)].perm))] ,|,|
-    ), 39, |
+    ), div(sub(width(%#),2),1), |
 	)]
+
+&fn.sheet.bio [v(d.cco)] = 
+  [ljust([ljust(%chFull Name:%cn,15)][get(%0/_bio.full_name.perm)], sub(div(width(%#),2),1))]%b
+  [ljust([ljust(%chConcept:%cn,15)][get(%0/_bio.concep.perm)], sub(div(width(%#),2),1))]%R
+  [ljust([ljust(%chAge:%cn,15)][get(%0/_bio.age.perm)], sub(div(width(%#),2),1))]%b
+  [ljust([ljust(%chAmbition:, 15)]%cn[get(%0/_bio.ambition.perm)], sub(div(width(%#),2),1))]%r
+  [ljust([ljust(%chDesire:%cn,15)][get(%0/_bio.desire.perm)], sub(div(width(%#),2),1))]%b
+  [ljust([ljust(%chTemplate:%cn,15)][get(%0/_bio.template.perm)], sub(div(width(%#),2),1))]%b
+  
+
+&fn.sheet.bio.vampire [v(d.cco)] = 
+  [ljust([ljust(%chFull Name:%cn,15)][get(%0/_bio.full_name.perm)], sub(div(width(%#),2),1))]%b
+  [ljust([ljust(%chConcept:%cn,15)][get(%0/_bio.concep.perm)], sub(div(width(%#),2),1))]%R
+  [ljust([ljust(%chAge:%cn,15)][get(%0/_bio.age.perm)], sub(div(width(%#),2),1))]%b
+  [ljust([ljust(%chPredator:%cn,15)][get(%0/_bio.predator.perm)], sub(div(width(%#),2),1))]%r
+  [ljust([ljust(%chSire:%cn,15)][get(%0/_bio.Sire.perm)], sub(div(width(%#),2),1))]%b
+  [ljust([ljust(%chAmbition:, 15)]%cn[get(%0/_bio.ambition.perm)], sub(div(width(%#),2),1))]%r
+  [ljust([ljust(%chDesire:%cn,15)][get(%0/_bio.desire.perm)], sub(div(width(%#),2),1))]%b
+  [ljust([ljust(%chGeneration:%cn,15)][get(%0/_bio.Generation.perm)], sub(div(width(%#),2),1))]%r
+  [ljust([ljust(%chTemplate:%cn,15)][get(%0/_bio.Template.perm)], sub(div(width(%#),2),1))]%r 
 
 /*
 =============================================================================
@@ -41,21 +49,23 @@ display a stat sheet for a character
 
 registers:
 %0: character
+-----------------------------------------------------------------------------
 */
-&fn.sheet.stats #31=
-	[center(%b%chAttributes%cn%b, 78, - )]%r
-  [center(Physical, 26)]
-  [center(Social,   26)]
-  [center(Mental,   26)]%r
-  [ulocal(fn.format, %0, strength)]%b
-  [ulocal(fn.format, %0, charisma )]%b
-  [ulocal(fn.format, %0, intelligence)]%r
-  [ulocal(fn.format, %0, dexterity)]%b
-  [ulocal(fn.format, %0, manipulation )]%b
-  [ulocal(fn.format, %0, wits)]%r
-  [ulocal(fn.format, %0, stamina)]%b
-  [ulocal(fn.format, %0, composure )]%b
-  [ulocal(fn.format, %0, resolve)]
+
+&fn.sheet.stats [v(d.cco)]=
+	[center(%b%chAttributes%cn%b, width(%#), - )]%r
+  [center(Physical, setr(0, div(width(%#),3)))]
+  [center(Social,   %q0)]
+  [center(Mental,   %q0)]%r
+  [ulocal(fn.format, %0, strength, %q0 )]%b
+  [ulocal(fn.format, %0, charisma, sub(%q0,1) )]%b
+  [ulocal(fn.format, %0, intelligence, %q0 )]%r
+  [ulocal(fn.format, %0, dexterity, %q0 )]%b
+  [ulocal(fn.format, %0, manipulation, sub(%q0,1) )]%b
+  [ulocal(fn.format, %0, wits, %q0 )]%r
+  [ulocal(fn.format, %0, stamina, %q0 )]%b
+  [ulocal(fn.format, %0, composure, sub(%q0,1) )]%b
+  [ulocal(fn.format, %0, resolve, %q0)]
 
 /*
 =============================================================================
@@ -68,12 +78,13 @@ registers:
 ----------------------------------------------------------------------------
 */
 
-&fn.sheet.skills #31=
-    [setq(0,ulocal(fn.sheet.buildskills, %0, physical ))]
-    [setq(1,ulocal(fn.sheet.buildskills, %0, social,  add(%qa, %qb) ))]
-    [setq(2,ulocal(fn.sheet.buildskills, %0, mental))]
+&fn.sheet.skills [v(d.cco)]=
+    [setq(0,ulocal(fn.sheet.buildskills, %0, physical, div(width(%#),3) ))]
+    [setq(1,ulocal(fn.sheet.buildskills, %0, social,  sub(div(width(%#),3), 1) ))]
+    [setq(2,ulocal(fn.sheet.buildskills, %0, mental, div(width(%#),3) ))]
     [setq(3,max(words(%q0,|),words(%q1,|),words(%q2,|)))]
-		[center(%b%chSkills%cn%b,78,-)]
+		[center(%b%chSkills%cn%b,width(%#),-)]
+    
     [iter(
       after(lnum(%q3),0),
       %r[ljust(
@@ -81,21 +92,21 @@ registers:
           strmatch(extract(%q0,##,1,|),*..*),
           extract(%q0,##,1,|), 
           %b%b%b[extract(%q0,##,1,|)] 
-        ), 26 
-      )]
+        ), div(width(%#),3)
+      )]%b
       [ljust(
         if(
           strmatch(extract(%q1,##,1,|),*..*),
           extract(%q1,##,1,|), 
           %b%b%b[extract(%q1,##,1,|)] 
-        ), 26 
-      )]
+        ), sub(div(width(%#),3),1) 
+      )]%b
       [ljust(
         if(
           strmatch(extract(%q2,##,1,|),*..*),
           extract(%q2,##,1,|), 
           %b%b%b[extract(%q2,##,1,|)] 
-        ), 26 
+        ), div(width(%#),3) 
       )]
     )]
   
@@ -113,14 +124,14 @@ Registers:
 
 -----------------------------------------------------------------------------
 */
-*/
-&fn.sheet.buildskills #31=	
+
+&fn.sheet.buildskills [v(d.cco)]=	
   [setq(0,
       iter(
           get(me/skills.%1),
           if(
               u(fn.getstat, %0, ##),
-              [ulocal(fn.format, %0, ##)]|
+              [ulocal(fn.format, %0, ##, %2 )]|
               [iter(
                   lattr(%0/_##.*.perm),
                   [ljust(
@@ -132,16 +143,28 @@ Registers:
                               %b
                           )
                         ),.perm)]%cn|, 
-                      if(isnum(%2),%2, 24) 
+                      %2 
                   )]
               )],
-            [ulocal(fn.format, %0, ##)]|
+            [ulocal(fn.format, %0, ##, %2)]|
           ),|
       )
   )]
   [iter(%q0,if(words(##),trim(##),%b),|,|)]
 
-&fn.sheet.disciplines  #31=
+/*
+=============================================================================
+===== fn.sheet.disciplines ==================================================
+
+display a list of disciplines for a character
+
+registers:
+  %0: character
+
+-----------------------------------------------------------------------------
+*/
+
+&fn.sheet.disciplines  [v(d.cco)]=
 	[center(%b%chDisciplines%cn%b, 78, - )]
   [iter(
   	sort(lattr(%0/_disciplines.*.perm)),
@@ -165,23 +188,27 @@ Registers:
     )]
   )]
 
-&fn.sheet.merits #31 = 
+&fn.sheet.merits [v(d.cco)] = 
 	[center(%b%chMerits%cn%b,78, - )]
  	[iter(
     lattr(%0/_MERITS.*.PERM),
     %R[ulocal(fn.format, %0, lcstr(before(after(##,_MERITS.),.PERM)),77 )]
    )] 
 
-&fn.sheet.flaws #31 = 
+&fn.sheet.flaws [v(d.cco)] = 
 	[center(%b%chFlaws%cn%b, 78, - )]
  	[iter(
     lattr(%0/_FLAWS.*.PERM),
     %R[ulocal(fn.format, %0, lcstr(before(after(##,_FLAWS.),.PERM)),77 )]
    )] 
      
-&fn.sheet #31=
-	[center(%b%ch%ccCharacter Sheet for [name(pmatch(%0))]%cn%b,78, = )]%r
-	[u(fn.sheet.bio, %0)]
+&fn.sheet [v(d.cco)]=
+	[center(%b%ch%ccCharacter Sheet for [name(pmatch(%0))]%cn%b,width(%#), = )]%r
+	[if(
+    hasattr(me, fn.sheet.bio.[get(%0/_bio.template.perm)]),
+    u(fn.sheet.bio.[get(%0/_bio.template.perm)], %0),
+    u(fn.sheet.bio, %0)
+  )]
   [u(fn.sheet.stats, %0)]%r
   [u(fn.sheet.skills, %0)]%r
   [if(words(lattr(%0/_DISCIPLINES.*)),
@@ -193,12 +220,17 @@ Registers:
   [if(words(lattr(%0/_FLAWS.*)),
   	[u(fn.sheet.flaws, %0)]%r
   )]
-  [repeat(=,78)]
+  [repeat(=,width(%#))]
   
-&cmd.sheet #31=$+sheet:
+&cmd.sheet [v(d.cco)]=$+sheet:
 	@pemit %#=u(fn.sheet, %#)
 
-&cmd.sheet2 #31=$+sheet *:
+&cmd.sheet2 [v(d.cco)]=$+sheet *:
+  // Must be staff to use this command.
+  @assert orflags(%#, wWZ) = {
+    @pemit %#= Permission denied.
+  }
+
 	@pemit %#=u(fn.sheet, *%0)
 
 &fn.prereqs #34=

@@ -4,16 +4,16 @@
 */
 
 @if not(hasattr(me, d.cco)) = {
-  @create Chargen Command Object <CCO>;
-  @fo me=&.d.cco = [search(name=Chargen Command Object <CCO>)];
-  @fo me = @set v(d.cco) = safe inherit;
+    @create Chargen Command Object <CCO>;
+    @fo me=&.d.cco = [search(name=Chargen Command Object <CCO>)];
+    @fo me = @set v(d.cco) = safe inherit;
 }
 
 
 @if not(hasattr(me, d.cdo)) = {
-  @create Chargen Data Object <CDO>;
-  @fo me=&.d.cco = [search(name=Chargen Command Object <CCO>)];
-  @fo me = @set v(d.cco) = safe inherit;
+    @create Chargen Data Object <CDO>;
+    @fo me=&.d.cco = [search(name=Chargen Command Object <CCO>)];
+    @fo me = @set v(d.cco) = safe inherit;
 }
 
 @va [v(d.cco)] = [get(me/d.cdo)]
@@ -78,16 +78,16 @@
 	
   // Make sure they're either not approved, or are staff.
   @assert or(not(hasflag(%#,approved)), orflags(%#,wWZ)) = {
-    @pemit %#= %chGame>%cn You can't set stats on approved characters.
+     @pemit %#= %chGame>%cn You can't set stats on approved characters.
   };
   
   // Make sure they have permissions to set stats on the given
   // character. You can only set stats on player objects.
   @assert 
     or(
-      strmatach(pmatch(%1),%#),
-      orflags(%#,wWZ),
-      strmatch(lcstr(%1),me)
+        strmatach(pmatch(%1),%#),
+        orflags(%#,wWZ),
+        strmatch(lcstr(%1),me)
     ) = {
   		@pemit %#=Permission denied.
   };
@@ -203,13 +203,18 @@
     strmatch(%3, *.*), {
       &_[before(%3,.)].[edit(after(%3,.),%b,_)].perm *%1=%4;
       &_[before(%3,.)].[edit(after(%3,.),%b,_)].temp *%1=%4;
+      
+      @if hasattr(%va, trigger.[edit(%3,%b,_)]) = {
+        @tr %va/trigger.[edit(%3,%b,_)]
+      }, {
+        @tr %va/trigger.[edit(%2,%b,_)]
+      }        
     },{
     	&_[before(%2,.)].[edit(%3,%b,_)].perm *%1=%4;
       &_[before(%2,.)].[edit(%3,%b,_)].temp *%1=%4;
     };
-    
+  
   @pemit %0=%chGame>%cn Done! %ch%3%cn has been set to %ch%4%cn;  
-
 
 /*
 ----- fn.whichlist -----------------------------------------------------------
