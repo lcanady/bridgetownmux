@@ -165,10 +165,10 @@ registers:
 */
 
 &fn.sheet.disciplines  [v(d.cco)]=
-	[center(%b%chDisciplines%cn%b, 78, - )]
+	[center(%b%chDisciplines%cn%b, width(%#), - )]
   [iter(
   	sort(lattr(%0/_disciplines.*.perm)),
-    %r[u(fn.format, %0,before(after(##,_DISCIPLINES.),.PERM),77)]
+    %r[u(fn.format, %0,before(after(##,_DISCIPLINES.),.PERM),width(%#))]
     [iter(
     	sort(lattr(%0/_[before(after(itext(0),_DISCIPLINES.),.PERM)].*.perm)), 
       %r[rjust(
@@ -182,24 +182,24 @@ registers:
               	_[before(after(##,_DISCIPLINES.),.PERM)].
               ),
               .PERM
-            ) , _, %b ), 73 
-        ), 77 
+            ) , _, %b ), sub(width(%#),5) 
+        ), width(%#) 
       )]
     )]
   )]
 
 &fn.sheet.merits [v(d.cco)] = 
-	[center(%b%chMerits%cn%b,78, - )]
+	[center(%b%chMerits%cn%b,width(%#), - )]
  	[iter(
     lattr(%0/_MERITS.*.PERM),
-    %R[ulocal(fn.format, %0, lcstr(before(after(##,_MERITS.),.PERM)),77 )]
+    %R[ulocal(fn.format, %0, lcstr(before(after(##,_MERITS.),.PERM)),width(%#) )]
    )] 
 
 &fn.sheet.flaws [v(d.cco)] = 
-	[center(%b%chFlaws%cn%b, 78, - )]
+	[center(%b%chFlaws%cn%b, width(%#), - )]
  	[iter(
     lattr(%0/_FLAWS.*.PERM),
-    %R[ulocal(fn.format, %0, lcstr(before(after(##,_FLAWS.),.PERM)),77 )]
+    %R[ulocal(fn.format, %0, lcstr(before(after(##,_FLAWS.),.PERM)),width(%#) )]
    )] 
      
 &fn.sheet [v(d.cco)]=

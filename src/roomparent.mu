@@ -9,6 +9,10 @@ See SETUP for instructions on how to use this room.
 #############################################################################
 */
 
+ 
+&headerfill [v(d.grp)]= =
+&dividerfill [v(d.grp)]= -
+&accent [v(d.grp)]= %cc
 think Starting setup of Global Room Parent.
 @set me=quiet
 
@@ -34,7 +38,7 @@ think Starting setup of Global Room Parent.
 	you're seeing this message then it means that the description for 
 	for this places still needs to be written!  Uh oh!%r %r
 	For a list of available commands in this rooom, type 
-	'%ch%c+roomparent%cn.'
+	'%ch[u(accent)]roomparent%cn.'
 
 /*
 ===========================================================================
@@ -51,8 +55,13 @@ Format the name of the parent room.
   	[if(
     	orflags(%#,wWZ), 
     	%([num(me)][flags(me)]%)%cn%b,    	
-  	)],
-    width(%#), =
+  	)]
+	[if(
+		not(hasflag(me, IC)),
+		- %cc%[OOC%]%b
+	)]
+	,
+    width(%#), u(headerfill)
   )]
 
 /*
